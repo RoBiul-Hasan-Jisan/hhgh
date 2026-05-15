@@ -43,7 +43,7 @@ export default function IncomeTable() {
 		[mutate]
 	);
 
-	const onEdit = useCallback(async (data: IncomeData | any) => {
+	const onEdit = useCallback((data: any) => {
 		setSelected(data);
 	}, []);
 

@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { deleteUser } from 'app/dashboard/settings/apis';
-
 import { useUser } from 'components/context/auth-provider';
 import CircleLoader from 'components/loader/circle';
 import { Button } from 'components/ui/button';
@@ -16,15 +13,15 @@ export default function DeleteModal({ show, onHide }: { show: boolean; onHide: (
 	const user = useUser();
 	const [loading, setLoading] = useState(false);
 	const [verify, setVerify] = useState('');
-	const supabase = createClientComponentClient();
 
 	const onDelete = async () => {
 		if (verify === user.email) {
 			setLoading(true);
-			await deleteUser();
+			// Clear all localStorage data
+			localStorage.clear();
 			setLoading(false);
-			await supabase.auth.signOut();
-			window.location.href = '/signup';
+			// Redirect to home
+			window.location.href = '/';
 		}
 	};
 

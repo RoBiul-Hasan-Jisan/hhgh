@@ -54,7 +54,7 @@ export default function SubscriptionsTable() {
 		[mutate]
 	);
 
-	const onEdit = useCallback((data: SubscriptionsData | any) => {
+	const onEdit = useCallback((data: any) => {
 		setSelected(data);
 	}, []);
 

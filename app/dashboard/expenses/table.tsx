@@ -43,7 +43,7 @@ export default function ExpenseTable() {
 		[mutate]
 	);
 
-	const onEdit = useCallback(async (data: ExpenseData | any) => {
+	const onEdit = useCallback((data: any) => {
 		setSelected(data);
 	}, []);
 
