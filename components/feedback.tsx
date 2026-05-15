@@ -10,7 +10,6 @@ import { Button } from 'components/ui/button';
 import { Popover } from 'components/ui/popover';
 import { Textarea } from 'components/ui/textarea';
 
-import { apiUrls } from 'lib/apiUrls';
 import { cn } from 'lib/utils';
 
 import messages, { emails } from 'constants/messages';
@@ -22,16 +21,15 @@ export default function Feedback({ className, showDatePicker }: { className?: st
 		setState({ ...state, loading: true });
 
 		try {
-			const res = await fetch(apiUrls.feedback.add, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ message: state.message }),
+			// Feedback submission is now disabled (localStorage mode)
+			// Store feedback in localStorage for reference
+			const feedbackList = JSON.parse(localStorage.getItem('feedback') || '[]');
+			feedbackList.push({
+				id: Date.now().toString(),
+				message: state.message,
+				timestamp: new Date().toISOString(),
 			});
-
-			if (!res.ok) {
-				const error = await res.json();
-				throw new Error(error.message || res.statusText);
-			}
+			localStorage.setItem('feedback', JSON.stringify(feedbackList));
 
 			setState((prev) => ({ ...prev, sent: true, loading: false, message: '' }));
 
@@ -40,7 +38,7 @@ export default function Feedback({ className, showDatePicker }: { className?: st
 			}, 5000);
 		} catch (error: any) {
 			setState((prev) => ({ ...prev, loading: false }));
-			toast.error(emails.feedback.failed);
+			toast.error('Failed to submit feedback');
 		}
 	};
 

@@ -8,7 +8,7 @@ import { Label } from 'components/ui/label';
 
 import data from 'data/currency.json';
 
-import { updateUser } from './apis';
+
 
 const currencyData = Object.keys(data)
 	.map((key: string) => {
@@ -47,9 +47,13 @@ export default function Account() {
 						<Combobox
 							data={currencyData}
 							selected={currency}
-							onChange={async (value: string) => {
+							onChange={(value: string) => {
 								const [currency, locale] = value.split('-');
-								await updateUser({ currency, locale });
+								const user = JSON.parse(localStorage.getItem('user') || '{}');
+								user.currency = currency;
+								user.locale = locale;
+								localStorage.setItem('user', JSON.stringify(user));
+								window.location.reload();
 							}}
 						/>
 					</div>

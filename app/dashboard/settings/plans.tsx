@@ -11,7 +11,6 @@ import { useUser } from 'components/context/auth-provider';
 import { Button } from 'components/ui/button';
 import { Card, CardContent, CardHeader } from 'components/ui/card';
 
-import { apiUrls } from 'lib/apiUrls';
 import { formatCurrency } from 'lib/formatter';
 
 import { dateFormat } from 'constants/date';
