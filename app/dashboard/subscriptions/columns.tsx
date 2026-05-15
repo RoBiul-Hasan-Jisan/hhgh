@@ -12,7 +12,18 @@ import { Checkbox } from 'components/ui/checkbox';
 
 import { formatCurrency, formatDate } from 'lib/formatter';
 
-import { SubscriptionsData } from './apis';
+interface SubscriptionsData {
+	id: string;
+	name: string;
+	price: string;
+	paid: string;
+	renewal_date: string;
+	date: string;
+	notes: string;
+	active: boolean;
+	url?: string;
+	cancelled_at?: string;
+}
 
 export const columns: ColumnDef<SubscriptionsData>[] = [
 	{
