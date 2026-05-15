@@ -60,25 +60,15 @@ export default function Plans() {
 	const onSuccess = async ({ order }: { order: any }, close: any) => {
 		const { attributes } = order.data;
 		try {
-			const res = await fetch(apiUrls.user.upgrade, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					billing_start_date: format(new Date(), dateFormat),
-					plan_status: premiumPlan.name,
-					order_identifier: attributes.identifier,
-					order_store_id: String(attributes.store_id),
-					order_number: String(attributes.order_number),
-					order_status: attributes.status,
-				}),
-			});
-			if (!res.ok) {
-				const error = await res.json();
-				throw new Error(error.message || res.statusText);
-			} else {
-				toast.success(messages.payments.success);
-				setTimeout(() => window.location.reload(), 6000);
-			}
+			// Store premium status in localStorage
+			const user = JSON.parse(localStorage.getItem('user') || '{}');
+			user.isPremium = true;
+			user.billing_start_date = format(new Date(), dateFormat);
+			user.plan_status = premiumPlan.name;
+			localStorage.setItem('user', JSON.stringify(user));
+			
+			toast.success(messages.payments.success);
+			setTimeout(() => window.location.reload(), 6000);
 		} catch (error: any) {
 			toast.error(error.message);
 		}

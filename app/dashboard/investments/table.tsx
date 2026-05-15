@@ -43,7 +43,7 @@ export default function InvestmentsTable() {
 		[mutate]
 	);
 
-	const onEdit = useCallback(async (data: InvestmentData | any) => {
+	const onEdit = useCallback((data: any) => {
 		setSelected(data);
 	}, []);
 
