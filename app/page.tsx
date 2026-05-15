@@ -19,10 +19,10 @@ export default function Home() {
 						<span className="font-black tracking-[-0.03em] text-gray-900">Expense.fyi</span>
 					</Link>
 					<Link
-						href={url.app.signin}
+						href="/dashboard"
 						className="leading-2 mr-4 inline-flex h-[34px] items-center overflow-hidden rounded-full bg-gray-900 px-4 py-1 text-sm font-medium text-white transition hover:bg-primary/90"
 					>
-						Sign in
+						Open App
 					</Link>
 				</div>
 			</header>
@@ -58,10 +58,10 @@ export default function Home() {
 					</p>
 					<div className="mt-10 flex justify-center">
 						<Link
-							href={url.app.signup}
+							href="/dashboard"
 							className="inline-flex h-[34px] items-center justify-center rounded-full bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 hover:shadow"
 						>
-							Try it for Free
+							Get Started
 						</Link>
 						<Link
 							href={url.github}
@@ -222,7 +222,7 @@ export default function Home() {
 								</div>
 								<a
 									className="mt-10 block w-full rounded-md bg-white py-2 text-center text-sm font-semibold text-black hover:bg-gray-200"
-									href="https://app.expense.fyi/signup"
+									href="/dashboard"
 								>
 									Start for free
 								</a>
@@ -320,7 +320,7 @@ export default function Home() {
 								</div>
 								<a
 									className="mt-10 flex w-full justify-center rounded-md bg-white py-2 text-center text-sm font-semibold text-black hover:bg-gray-200"
-									href="https://app.expense.fyi/signup"
+									href="/dashboard"
 								>
 									Get started
 								</a>

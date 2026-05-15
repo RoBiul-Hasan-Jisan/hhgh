@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { incrementUsage } from 'app/dashboard/apis';
-import { addInvestment, editInvestment } from 'app/dashboard/investments/apis';
 import { format } from 'date-fns';
 import debounce from 'debounce';
 import { toast } from 'sonner';
@@ -64,12 +62,22 @@ export default function AddInvestments({ show, onHide, mutate, selected, lookup 
 		try {
 			setLoading(true);
 			const isEditing = selected?.id;
+			const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+			
 			if (isEditing) {
-				await editInvestment(state);
+				const index = investments.findIndex((i: any) => i.id === state.id);
+				if (index !== -1) {
+					investments[index] = state;
+				}
 			} else {
-				await addInvestment(state);
-				incrementUsage();
+				const newInvestment = {
+					...state,
+					id: Date.now().toString(),
+				};
+				investments.push(newInvestment);
 			}
+			
+			localStorage.setItem('investments', JSON.stringify(investments));
 			setLoading(false);
 			if (mutate) mutate();
 			toast.success(isEditing ? messages.updated : messages.success);

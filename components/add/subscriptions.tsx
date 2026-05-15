@@ -4,8 +4,6 @@ import Image from 'next/image';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { incrementUsage } from 'app/dashboard/apis';
-import { addSubscription, editSubscription } from 'app/dashboard/subscriptions/apis';
 import { format } from 'date-fns';
 import debounce from 'debounce';
 import { toast } from 'sonner';
@@ -78,12 +76,22 @@ export default function AddSubscriptions({ show, onHide, mutate, selected, looku
 		try {
 			setLoading(true);
 			const isEditing = selected?.id;
+			const subscriptions = JSON.parse(localStorage.getItem('subscriptions') || '[]');
+			
 			if (isEditing) {
-				await editSubscription(state);
+				const index = subscriptions.findIndex((s: any) => s.id === state.id);
+				if (index !== -1) {
+					subscriptions[index] = state;
+				}
 			} else {
-				await addSubscription(state);
-				incrementUsage();
+				const newSubscription = {
+					...state,
+					id: Date.now().toString(),
+				};
+				subscriptions.push(newSubscription);
 			}
+			
+			localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
 			setLoading(false);
 			toast.success(isEditing ? messages.updated : messages.success);
 			if (mutate) mutate();

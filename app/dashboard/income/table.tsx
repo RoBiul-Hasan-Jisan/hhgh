@@ -14,7 +14,6 @@ import { lookup } from 'lib/lookup';
 import { incomeCategory } from 'constants/categories';
 import messages from 'constants/messages';
 
-import { IncomeData, deleteIncome } from './apis';
 import { columns } from './columns';
 
 const categories = Object.keys(incomeCategory)
@@ -30,9 +29,11 @@ export default function IncomeTable() {
 	const user = useUser();
 
 	const onDelete = useCallback(
-		async (id: string) => {
+		(id: string) => {
 			try {
-				await deleteIncome(id);
+				const income = JSON.parse(localStorage.getItem('income') || '[]');
+				const filtered = income.filter((i: any) => i.id !== id);
+				localStorage.setItem('income', JSON.stringify(filtered));
 				toast.success(messages.deleted);
 				mutate();
 			} catch {

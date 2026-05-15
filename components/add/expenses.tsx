@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { incrementUsage } from 'app/dashboard/apis';
-import { addExpense, editExpense } from 'app/dashboard/expenses/apis';
 import { format } from 'date-fns';
 import debounce from 'debounce';
 import { toast } from 'sonner';
@@ -75,12 +73,24 @@ export default function AddExpense({ show, onHide, mutate, selected, lookup }: A
 		try {
 			setLoading(true);
 			const isEditing = selected?.id;
+			const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+			
 			if (isEditing) {
-				await editExpense(state);
+				// Edit existing expense
+				const index = expenses.findIndex((e: any) => e.id === state.id);
+				if (index !== -1) {
+					expenses[index] = state;
+				}
 			} else {
-				await addExpense(state);
-				incrementUsage();
+				// Add new expense
+				const newExpense = {
+					...state,
+					id: Date.now().toString(),
+				};
+				expenses.push(newExpense);
 			}
+			
+			localStorage.setItem('expenses', JSON.stringify(expenses));
 			setLoading(false);
 			toast.success(isEditing ? messages.updated : messages.success);
 			if (mutate) mutate();
