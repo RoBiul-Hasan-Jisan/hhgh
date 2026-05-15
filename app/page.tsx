@@ -15,109 +15,122 @@ export default function Home() {
   const finance = useFinance()
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen bg-background text-foreground">
       <Navigation />
 
-      {/* MAIN CONTENT */}
-      <main className="w-full overflow-x-hidden pt-24">
-        <div className="px-4 py-6 md:px-8 space-y-6 max-w-[1600px] mx-auto">
-          
+      <main className="pt-24 pb-12">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
+
           {/* HEADER */}
           <DashboardHeader />
 
-          {/* CONTENT */}
+          {/* MAIN CONTENT */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
+            transition={{ duration: 0.35 }}
+            className="space-y-10"
           >
-            {/* STATS */}
-            <DashboardStats
-              totalExpenses={finance.totalExpenses}
-              totalIncome={finance.totalIncome}
-              netBalance={finance.netBalance}
-              investmentValue={finance.totalInvestmentValue}
-            />
+
+            {/* TOP STATS */}
+            <section className="rounded-3xl border border-border/50 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-sm">
+              <DashboardStats
+                totalExpenses={finance.totalExpenses}
+                totalIncome={finance.totalIncome}
+                netBalance={finance.netBalance}
+                investmentValue={finance.totalInvestmentValue}
+              />
+            </section>
 
             {/* CHART + SUMMARY */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-              <div className="xl:col-span-2 min-w-0">
+            <section className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+              {/* CHARTS */}
+              <div className="xl:col-span-8 rounded-3xl border border-border/50 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-sm min-w-0">
                 <DashboardCharts
                   expensesByCategory={finance.expensesByCategory}
                   incomeByCategory={finance.incomeByCategory}
                 />
               </div>
 
-              <div className="min-w-0">
+              {/* SUMMARY */}
+              <div className="xl:col-span-4 rounded-3xl border border-border/50 bg-card/40 backdrop-blur-xl p-5 sm:p-6 shadow-sm min-w-0">
                 <DashboardSummary
                   expenses={finance.expenses}
                   income={finance.income}
                   goals={finance.goals}
                 />
               </div>
-            </div>
 
-            {/* QUICK STATS */}
-            <section className="rounded-2xl border border-border bg-card p-6">
-              <div className="mb-5">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Quick Stats
+            </section>
+
+            {/* QUICK INSIGHTS */}
+            <section className="space-y-5">
+
+              {/* TITLE */}
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
+                  Insights
                 </h2>
-
                 <p className="text-sm text-muted-foreground mt-1">
-                  Overview of your finance activity
+                  Real-time overview of your financial activity
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                
-                <div className="rounded-xl bg-muted/50 border border-border p-5">
-                  <p className="text-sm text-muted-foreground">
-                    Monthly Subscriptions
-                  </p>
+              {/* CARDS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
-                  <h3 className="text-2xl font-bold mt-3">
-                    {finance.preferences.currency}
-                    {finance.monthlySubscriptions.toFixed(2)}
-                  </h3>
-                </div>
+                {[
+                  {
+                    label: 'Subscriptions',
+                    value: finance.monthlySubscriptions.toFixed(2),
+                    prefix: finance.preferences.currency,
+                  },
+                  {
+                    label: 'Active Habits',
+                    value: finance.habits.length,
+                  },
+                  {
+                    label: 'Active Goals',
+                    value: finance.goals.length,
+                  },
+                  {
+                    label: 'Pending Tasks',
+                    value: finance.tasks.filter(
+                      (t) => t.status !== 'completed'
+                    ).length,
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="
+                      group relative overflow-hidden
+                      rounded-2xl border border-border/40
+                      bg-gradient-to-b from-card/60 to-card/20
+                      p-5 shadow-sm hover:shadow-md
+                      transition-all duration-300
+                    "
+                  >
+                    {/* subtle glow */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-primary/5" />
 
-                <div className="rounded-xl bg-muted/50 border border-border p-5">
-                  <p className="text-sm text-muted-foreground">
-                    Active Habits
-                  </p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.label}
+                    </p>
 
-                  <h3 className="text-2xl font-bold mt-3">
-                    {finance.habits.length}
-                  </h3>
-                </div>
+                    <h3 className="text-2xl font-bold mt-3 tracking-tight">
+                      {item.prefix ? `${item.prefix} ` : ''}
+                      {item.value}
+                    </h3>
+                  </motion.div>
+                ))}
 
-                <div className="rounded-xl bg-muted/50 border border-border p-5">
-                  <p className="text-sm text-muted-foreground">
-                    Active Goals
-                  </p>
-
-                  <h3 className="text-2xl font-bold mt-3">
-                    {finance.goals.length}
-                  </h3>
-                </div>
-
-                <div className="rounded-xl bg-muted/50 border border-border p-5">
-                  <p className="text-sm text-muted-foreground">
-                    Pending Tasks
-                  </p>
-
-                  <h3 className="text-2xl font-bold mt-3">
-                    {
-                      finance.tasks.filter(
-                        (t) => t.status !== 'completed'
-                      ).length
-                    }
-                  </h3>
-                </div>
               </div>
             </section>
+
           </motion.div>
         </div>
       </main>

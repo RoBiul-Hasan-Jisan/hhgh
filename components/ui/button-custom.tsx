@@ -3,6 +3,10 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 
+/* =========================
+   BUTTON COMPONENT
+========================= */
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
   size?: 'sm' | 'md' | 'lg'
@@ -44,13 +48,18 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading ? (
+      {isLoading && (
         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-      ) : null}
+      )}
       {children}
     </button>
   )
 }
+
+
+/* =========================
+   PROGRESS BAR COMPONENT
+========================= */
 
 interface ProgressBarProps {
   value: number
@@ -74,19 +83,29 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   showLabel = false,
   color = 'primary',
 }) => {
-  const percentage = (value / max) * 100
+  
+  const safeMax = max > 0 ? max : 1
+  const safeValue = Math.max(0, value)
+
+  const percentage = (safeValue / safeMax) * 100
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <div className="w-full overflow-hidden rounded-full bg-muted h-2">
         <div
-          className={cn('h-full transition-all duration-300', colorClasses[color])}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
+          className={cn(
+            'h-full transition-all duration-300',
+            colorClasses[color]
+          )}
+          style={{
+            width: `${Math.min(percentage, 100)}%`,
+          }}
         />
       </div>
+
       {showLabel && (
         <span className="text-xs text-muted-foreground">
-          {value} / {max}
+          {safeValue} / {safeMax}
         </span>
       )}
     </div>

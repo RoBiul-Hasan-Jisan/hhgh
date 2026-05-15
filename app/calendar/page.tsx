@@ -10,86 +10,86 @@ export default function CalendarPage() {
   const finance = useFinance()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
-  const getDateEventsCount = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
-    const expenses = finance.expenses.filter((e) => e.date === dateStr).length
-    const income = finance.income.filter((i) => i.date === dateStr).length
-    const tasks = finance.tasks.filter((t) => t.dueDate === dateStr).length
-    return expenses + income + tasks
+  const toKey = (d: Date) => d.toISOString().split('T')[0]
+
+  const getEvents = (date: Date) => {
+    const key = toKey(date)
+
+    const expenses = finance.expenses
+      .filter((e) => e.date === key)
+      .map((e) => ({
+        type: 'expense',
+        title: e.description,
+        amount: e.amount,
+        tone: 'red',
+      }))
+
+    const income = finance.income
+      .filter((i) => i.date === key)
+      .map((i) => ({
+        type: 'income',
+        title: i.source,
+        amount: i.amount,
+        tone: 'green',
+      }))
+
+    const tasks = finance.tasks
+      .filter((t) => t.dueDate === key)
+      .map((t) => ({
+        type: 'task',
+        title: t.title,
+        priority: t.priority,
+        tone:
+          t.priority === 'high'
+            ? 'red'
+            : t.priority === 'medium'
+              ? 'yellow'
+              : 'blue',
+      }))
+
+    return [...expenses, ...income, ...tasks]
   }
 
-  const getDateEvents = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
-    const events = []
+  const selectedEvents = getEvents(selectedDate)
 
-    finance.expenses
-      .filter((e) => e.date === dateStr)
-      .forEach((e) => {
-        events.push({
-          type: 'expense',
-          title: e.description,
-          amount: e.amount,
-          color: 'red',
-        })
-      })
-
-    finance.income
-      .filter((i) => i.date === dateStr)
-      .forEach((i) => {
-        events.push({
-          type: 'income',
-          title: i.source,
-          amount: i.amount,
-          color: 'green',
-        })
-      })
-
-    finance.tasks
-      .filter((t) => t.dueDate === dateStr)
-      .forEach((t) => {
-        events.push({
-          type: 'task',
-          title: t.title,
-          priority: t.priority,
-          color: t.priority === 'high' ? 'red' : t.priority === 'medium' ? 'yellow' : 'blue',
-        })
-      })
-
-    return events
-  }
-
-  const selectedDateEvents = getDateEvents(selectedDate)
-  const highlightedDates = []
-  for (let i = 1; i <= 31; i++) {
-    const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i)
-    if (getDateEventsCount(date) > 0) {
-      highlightedDates.push(date)
-    }
-  }
+  const hasEvent = (date: Date) => getEvents(date).length > 0
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="pt-24 px-4 py-6 md:px-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Calendar</h1>
-            <p className="text-muted-foreground mt-1">View your events and expenses by date</p>
+      <main className="pt-24 pb-12">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 space-y-8">
+
+          {/* HEADER */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              Calendar
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Track your money flow & daily activity
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div>
+          {/* MAIN GRID */}
+          <div className="grid lg:grid-cols-12 gap-6">
+
+            {/* CALENDAR */}
+            <div className="lg:col-span-4 rounded-3xl border border-border/40 bg-card/40 backdrop-blur p-4 sm:p-5 shadow-sm">
               <Calendar
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
-                highlightedDates={highlightedDates}
+                highlightedDates={[]}
+                hasEvent={hasEvent}
               />
             </div>
 
-            <div className="lg:col-span-2">
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">
+            {/* DETAILS */}
+            <div className="lg:col-span-8 space-y-5">
+
+              {/* DATE HEADER */}
+              <div className="rounded-3xl border border-border/40 bg-card/40 backdrop-blur p-5">
+                <h2 className="text-lg font-semibold">
                   {selectedDate.toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
@@ -98,79 +98,108 @@ export default function CalendarPage() {
                   })}
                 </h2>
 
-                {selectedDateEvents.length > 0 ? (
-                  <div className="space-y-3">
-                    {selectedDateEvents.map((event, index) => (
-                      <div
-                        key={index}
-                        className="p-4 rounded-lg bg-muted/50 border border-border flex items-start justify-between"
-                      >
-                        <div>
-                          <p className="font-medium text-foreground">{event.title}</p>
-                          <p className="text-xs text-muted-foreground capitalize mt-1">
-                            {event.type}
-                            {event.priority && ` • ${event.priority} priority`}
-                          </p>
-                        </div>
-                        {event.amount && (
-                          <p
-                            className={`font-semibold ${
-                              event.color === 'green'
-                                ? 'text-green-600'
-                                : event.color === 'red'
-                                  ? 'text-red-600'
-                                  : 'text-foreground'
-                            }`}
-                          >
-                            {event.color === 'green' ? '+' : '-'}${event.amount.toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">No events on this date.</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Click on highlighted dates to view events
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedEvents.length} activities
+                </p>
+              </div>
+
+              {/* EVENTS */}
+              <div className="space-y-3">
+
+                {selectedEvents.length === 0 ? (
+                  <div className="rounded-3xl border border-dashed border-border/50 bg-card/20 p-10 text-center">
+                    <p className="text-muted-foreground">
+                      No activity for this day
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Try selecting another date
                     </p>
                   </div>
+                ) : (
+                  selectedEvents.map((event, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="
+                        group flex items-center justify-between
+                        rounded-2xl border border-border/40
+                        bg-card/30 hover:bg-card/60
+                        p-4 transition
+                      "
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {event.title}
+                        </p>
+
+                        <p className="text-xs text-muted-foreground mt-1 capitalize">
+                          {event.type}
+                          {event.priority && ` • ${event.priority}`}
+                        </p>
+                      </div>
+
+                      {'amount' in event && (
+                        <div
+                          className={`font-semibold ${
+                            event.type === 'income'
+                              ? 'text-emerald-500'
+                              : 'text-rose-500'
+                          }`}
+                        >
+                          {event.type === 'income' ? '+' : '-'}
+                          ${event.amount.toFixed(2)}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))
                 )}
               </div>
 
-              <div className="mt-6 bg-card rounded-lg border border-border p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Summary</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Expenses</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      ${selectedDateEvents
-                        .filter((e) => e.type === 'expense')
-                        .reduce((sum, e) => sum + (e.amount || 0), 0)
-                        .toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Income</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      ${selectedDateEvents
-                        .filter((e) => e.type === 'income')
-                        .reduce((sum, e) => sum + (e.amount || 0), 0)
-                        .toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Tasks</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {selectedDateEvents.filter((e) => e.type === 'task').length}
-                    </p>
-                  </div>
+              {/* SUMMARY */}
+              <div className="grid sm:grid-cols-3 gap-4">
+
+                <div className="rounded-2xl border border-border/40 bg-card/40 p-4">
+                  <p className="text-xs text-muted-foreground">
+                    Expenses
+                  </p>
+                  <p className="text-xl font-bold text-rose-500 mt-1">
+                    ${selectedEvents
+                      .filter((e: any) => e.type === 'expense')
+                      .reduce((s: number, e: any) => s + (e.amount || 0), 0)
+                      .toFixed(2)}
+                  </p>
                 </div>
+
+                <div className="rounded-2xl border border-border/40 bg-card/40 p-4">
+                  <p className="text-xs text-muted-foreground">
+                    Income
+                  </p>
+                  <p className="text-xl font-bold text-emerald-500 mt-1">
+                    ${selectedEvents
+                      .filter((e: any) => e.type === 'income')
+                      .reduce((s: number, e: any) => s + (e.amount || 0), 0)
+                      .toFixed(2)}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border/40 bg-card/40 p-4">
+                  <p className="text-xs text-muted-foreground">
+                    Tasks
+                  </p>
+                  <p className="text-xl font-bold text-blue-500 mt-1">
+                    {selectedEvents.filter((e: any) => e.type === 'task').length}
+                  </p>
+                </div>
+
               </div>
+
             </div>
           </div>
-        </motion.div>
-      </div>
+
+        </div>
+      </main>
     </div>
   )
 }
