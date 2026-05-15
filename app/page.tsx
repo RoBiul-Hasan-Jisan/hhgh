@@ -19,7 +19,7 @@ export default function Home() {
       <Navigation />
 
       {/* MAIN CONTENT */}
-      <main className="md:ml-64 w-full overflow-x-hidden">
+      <main className="w-full overflow-x-hidden pt-24">
         <div className="px-4 py-6 md:px-8 space-y-6 max-w-[1600px] mx-auto">
           
           {/* HEADER */}

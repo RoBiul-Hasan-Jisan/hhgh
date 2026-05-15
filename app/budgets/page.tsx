@@ -54,7 +54,7 @@ export default function BudgetsPage() {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="md:ml-64 p-4 md:p-8">
+      <div className="pt-24 px-4 py-6 md:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between mb-8">
             <div>
