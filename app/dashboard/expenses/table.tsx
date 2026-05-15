@@ -14,7 +14,6 @@ import { lookup } from 'lib/lookup';
 import { expensesCategory } from 'constants/categories';
 import messages from 'constants/messages';
 
-import { ExpenseData, deleteExpense } from './apis';
 import { columns } from './columns';
 
 const categories = Object.keys(expensesCategory)
@@ -30,9 +29,11 @@ export default function ExpenseTable() {
 	const user = useUser();
 
 	const onDelete = useCallback(
-		async (id: string) => {
+		(id: string) => {
 			try {
-				await deleteExpense(id);
+				const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+				const filtered = expenses.filter((e: any) => e.id !== id);
+				localStorage.setItem('expenses', JSON.stringify(filtered));
 				toast.success(messages.deleted);
 				mutate();
 			} catch {

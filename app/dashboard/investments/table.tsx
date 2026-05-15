@@ -14,7 +14,6 @@ import { lookup } from 'lib/lookup';
 import { investmentCategory } from 'constants/categories';
 import messages from 'constants/messages';
 
-import { InvestmentData, deleteInvestment } from './apis';
 import { columns } from './columns';
 
 const categories = Object.keys(investmentCategory)
@@ -30,9 +29,11 @@ export default function InvestmentsTable() {
 	const user = useUser();
 
 	const onDelete = useCallback(
-		async (id: string) => {
+		(id: string) => {
 			try {
-				await deleteInvestment(id);
+				const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+				const filtered = investments.filter((inv: any) => inv.id !== id);
+				localStorage.setItem('investments', JSON.stringify(filtered));
 				toast.success(messages.deleted);
 				mutate();
 			} catch {

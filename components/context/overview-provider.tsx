@@ -1,11 +1,8 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import { format } from 'date-fns';
-import useSWR from 'swr';
-
-import { apiUrls } from 'lib/apiUrls';
 
 import { dateFormat } from 'constants/date';
 
@@ -22,21 +19,33 @@ interface Data {
 
 export const OverviewContextProvider = (props: any) => {
 	const { date } = useDate();
-	const from = format(date.from || date.to, dateFormat);
-	const to = format(date.to || date.from, dateFormat);
+	const [expensesData, setExpensesData] = useState<any[]>([]);
+	const [investmentsData, setInvestmentsData] = useState<any[]>([]);
+	const [incomeData, setIncomeData] = useState<any[]>([]);
+	const [subscriptionsData, setSubscriptionsData] = useState<any[]>([]);
+	const [loading, setLoading] = useState(false);
+
 	const { children, ...others } = props;
-	const {
-		data: expensesData = [],
-		isLoading: isExpenseLoading,
-		mutate: mutateExpenses,
-	} = useSWR(apiUrls.expenses.getExpenses({ from, to }));
-	const { data: investmentsData = [], isLoading: isInvestmentsLoading } = useSWR(
-		apiUrls.investments.getInvestments({ from, to })
-	);
-	const { data: incomeData = [], isLoading: isIncomeLoading } = useSWR(apiUrls.income.getIncome({ from, to }));
-	const { data: subscriptionsData = [], isLoading: isSubscriptionsLoading } = useSWR(
-		apiUrls.subscriptions.getSubscriptions({ from, to })
-	);
+
+	// Load data from localStorage
+	useEffect(() => {
+		setLoading(true);
+		const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+		const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+		const income = JSON.parse(localStorage.getItem('income') || '[]');
+		const subscriptions = JSON.parse(localStorage.getItem('subscriptions') || '[]');
+
+		setExpensesData(expenses);
+		setInvestmentsData(investments);
+		setIncomeData(income);
+		setSubscriptionsData(subscriptions);
+		setLoading(false);
+	}, []);
+
+	const mutateExpenses = () => {
+		const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+		setExpensesData(expenses);
+	};
 
 	const data = {
 		expenses: expensesData,
@@ -47,7 +56,6 @@ export const OverviewContextProvider = (props: any) => {
 			mutateExpenses,
 		},
 	};
-	const loading = isExpenseLoading || isInvestmentsLoading || isIncomeLoading || isSubscriptionsLoading;
 
 	return (
 		<OverviewContext.Provider value={{ loading, data }} {...others}>

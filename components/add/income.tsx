@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { incrementUsage } from 'app/dashboard/apis';
-import { addIncome, editIncome } from 'app/dashboard/income/apis';
 import { format } from 'date-fns';
 import debounce from 'debounce';
 import { toast } from 'sonner';
@@ -64,12 +62,22 @@ export default function AddIncome({ show, onHide, mutate, selected, lookup }: Ad
 		try {
 			setLoading(true);
 			const isEditing = selected?.id;
+			const income = JSON.parse(localStorage.getItem('income') || '[]');
+			
 			if (isEditing) {
-				await editIncome(state);
+				const index = income.findIndex((i: any) => i.id === state.id);
+				if (index !== -1) {
+					income[index] = state;
+				}
 			} else {
-				await addIncome(state);
-				incrementUsage();
+				const newIncome = {
+					...state,
+					id: Date.now().toString(),
+				};
+				income.push(newIncome);
 			}
+			
+			localStorage.setItem('income', JSON.stringify(income));
 			setLoading(false);
 			toast.success(isEditing ? messages.updated : messages.success);
 			if (mutate) mutate();

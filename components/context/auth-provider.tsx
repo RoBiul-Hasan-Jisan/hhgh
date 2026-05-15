@@ -1,102 +1,61 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { SWRConfig } from 'swr';
-
-import fetcher from 'lib/fetcher';
 
 interface User {
 	currency: string;
 	locale: string;
-	billing_start_date: string;
-	trial_start_date: string;
-	order_status: string;
-	usage: number;
-	email: string;
-	plan_status: string;
-	new_signup_email: boolean;
-	basic_usage_limit_email: boolean;
-	premium_plan_expired_email: boolean;
-	premium_usage_limit_email: boolean;
-	monthly_email_report: boolean;
 	isPremium: boolean;
-	isPremiumPlanEnded: boolean;
+	email: string;
 }
-
-interface Session {}
 
 const AuthContext = createContext(null);
 
+const localStorageFetcher = async (url: string) => {
+	const storageKey = `data_${url}`;
+	const data = localStorage.getItem(storageKey);
+	return data ? JSON.parse(data) : [];
+};
+
 export const AuthProvider = (props: any) => {
 	const [initial, setInitial] = useState(true);
-	const [session, setSession] = useState<Session | null>(null);
-	const router = useRouter();
-	const supabase = createClientComponentClient();
-	const { accessToken, user, children, ...others } = props;
+	const [user, setUser] = useState<User | null>(null);
+	const { children, ...others } = props;
 
 	useEffect(() => {
-		const searchParams = new URLSearchParams(window?.location?.hash ?? '');
-		const access_token = searchParams.get('#access_token');
-		const refresh_token = searchParams.get('refresh_token');
-
-		if (access_token && refresh_token) {
-			supabase.auth.setSession({ access_token, refresh_token });
-			router.push('/');
-			setInitial(true);
-		} else if (!accessToken) {
-			window.location.href = '/signin';
+		// Initialize user from localStorage
+		const storedUser = localStorage.getItem('user');
+		if (storedUser) {
+			setUser(JSON.parse(storedUser));
+		} else {
+			// Create default user
+			const defaultUser = {
+				currency: 'USD',
+				locale: 'en-US',
+				isPremium: false,
+				email: 'guest@example.com',
+			};
+			localStorage.setItem('user', JSON.stringify(defaultUser));
+			setUser(defaultUser);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	useEffect(() => {
-		async function getActiveSession() {
-			const {
-				data: { session: activeSession },
-			} = await supabase.auth.getSession();
-			setSession(activeSession ?? null);
-			setInitial(false);
-		}
-
-		getActiveSession();
-
-		const {
-			data: { subscription: authListener },
-		} = supabase.auth.onAuthStateChange((event, currentSession) => {
-			if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-				router.refresh();
-			}
-
-			if (event == 'SIGNED_OUT') {
-				window.location.href = '/signin';
-			}
-
-			setSession(currentSession);
-		});
-
-		return () => {
-			authListener?.unsubscribe();
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		setInitial(false);
 	}, []);
 
 	const value = useMemo(() => {
 		return {
 			initial,
-			session,
 			user,
-			signOut: () => supabase.auth.signOut(),
+			signOut: () => {
+				localStorage.clear();
+				setUser(null);
+			},
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [initial, session, user]);
+	}, [initial, user]);
 
 	return (
 		<AuthContext.Provider value={value} {...others}>
-			<SWRConfig value={{ fetcher }}>{session ? children : null}</SWRConfig>
+			<SWRConfig value={{ fetcher: localStorageFetcher }}>{!initial ? children : null}</SWRConfig>
 		</AuthContext.Provider>
 	);
 };

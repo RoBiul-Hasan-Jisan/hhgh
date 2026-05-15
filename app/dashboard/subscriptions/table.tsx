@@ -14,7 +14,6 @@ import { lookup } from 'lib/lookup';
 
 import messages from 'constants/messages';
 
-import { SubscriptionsData, deleteSubscription, editSubscription } from './apis';
 import { columns } from './columns';
 
 export default function SubscriptionsTable() {
@@ -23,9 +22,11 @@ export default function SubscriptionsTable() {
 	const user = useUser();
 
 	const onDelete = useCallback(
-		async (id: string) => {
+		(id: string) => {
 			try {
-				await deleteSubscription(id);
+				const subscriptions = JSON.parse(localStorage.getItem('subscriptions') || '[]');
+				const filtered = subscriptions.filter((s: any) => s.id !== id);
+				localStorage.setItem('subscriptions', JSON.stringify(filtered));
 				toast.success(messages.deleted);
 				mutate();
 			} catch {
@@ -36,9 +37,14 @@ export default function SubscriptionsTable() {
 	);
 
 	const onChange = useCallback(
-		async (data: SubscriptionsData | any) => {
+		(data: any) => {
 			try {
-				await editSubscription(data);
+				const subscriptions = JSON.parse(localStorage.getItem('subscriptions') || '[]');
+				const index = subscriptions.findIndex((s: any) => s.id === data.id);
+				if (index !== -1) {
+					subscriptions[index] = data;
+					localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+				}
 				toast.success(messages.updated);
 				mutate();
 			} catch {
